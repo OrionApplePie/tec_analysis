@@ -1,6 +1,9 @@
 import argparse
+import errno
+import os
 from pathlib import Path
 
+import pandas as pd
 
 # Параметры которые нужны
 NEEDED_PARAMETERS = (
@@ -16,9 +19,17 @@ def get_params(filename=""):
     """Функция для сбора параметров из файла .dat
     из строк в начале файла начинающихся с символа #.
     Возвращает словарь.
-
-    TODO: добавить обработку исключений
     """
+    if not filename:
+        raise ValueError("Filename is needed.")
+
+    if not os.path.isfile(filename):
+        raise FileNotFoundError(
+            errno.ENOENT,
+            os.strerror(errno.ENOENT),
+            filename
+        )
+
     params = []
 
     with open(filename, 'r') as tec_file:
@@ -50,7 +61,7 @@ def main():
     parser.add_argument(
         '-tec_file',
         type=Path, action='store',
-        dest='tec_file', default='',
+        dest='tec_file', default=Path(''),
         help='Файл с данными TEC (.dat).'
     )
 
@@ -58,6 +69,20 @@ def main():
 
     params = get_params(args.tec_file)
     print(params)
+
+    headers = (
+        "tsn", "time", "el", "az",
+        "latp", "lonp", "tec",
+        "tec_filtered", "validity"
+    )
+
+    dataframe = pd.read_csv(
+        filepath_or_buffer=args.tec_file,
+        delim_whitespace=True,  # разделитель - пробел(ы)
+        comment="#",  # пропускаем комменты
+        names=headers, # задание заголовков из списка
+    )
+    print(dataframe)
 
 
 if __name__ == '__main__':
