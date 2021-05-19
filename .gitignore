@@ -142,3 +142,7 @@ cython_debug/
 
 # png images
 *.png
+images/
+
+# generated csv files
+*.csv
